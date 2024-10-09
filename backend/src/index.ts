@@ -1,4 +1,6 @@
 import express from "express";
+import cookieParser from "cookie-parser";
+
 import authRoutes from "./routes/auth.route.js";
 import messageRoutes from "./routes/message.route.js";
 
@@ -8,8 +10,7 @@ dotenv.config();
 
 const app = express();
 
-console.log(typeof authRoutes); // Should log 'function', since Router is a middleware function
-
+app.use(cookieParser());
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
