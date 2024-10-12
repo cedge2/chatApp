@@ -39,6 +39,7 @@ export const signup = async (req: Request, res: Response) => {
 		});
 
 		if (newUser) {
+
 			generateToken(newUser.id, res);
 
 			res.status(201).json({
@@ -84,7 +85,6 @@ export const login = async (req: Request, res: Response) => {
 		res.status(500).json({ error: "Internal Server Error" });
 	}
 };
-
 export const logout = async (req: Request, res: Response) => {
 	try {
 		res.cookie("jwt", "", { maxAge: 0 });
