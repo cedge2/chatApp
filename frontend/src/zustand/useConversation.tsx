@@ -1,9 +1,10 @@
 import {create} from "zustand";
 
-type MessageType = {
+export type MessageType = {
     id: string;
     body: string;
     senderId: string; 
+    createdAt: string;
 }
 
 interface ConversationState{
