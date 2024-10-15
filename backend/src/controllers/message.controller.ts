@@ -1,22 +1,22 @@
 import { Request, Response } from "express";
 import prisma from "../db/prisma.js";
+import { getReceiverSocketId, io } from "../socket/socket.js";
 
 export const sendMessage = async (req: Request, res: Response) => {
-    try {
-        const { message } = req.body;
-        const { id:receiverId } = req.params;
-        const senderId = req.user.id;
+	try {
+		const { message } = req.body;
+		const { id: receiverId } = req.params;
+		const senderId = req.user.id;
 
-        let conversation = await prisma.conversation.findFirst({
-            where: {
-                participantIds: {
-                    hasEvery: [senderId, receiverId],
-                }
-            }
-        });
+		let conversation = await prisma.conversation.findFirst({
+			where: {
+				participantIds: {
+					hasEvery: [senderId, receiverId],
+				},
+			},
+		});
 
-        //if it's the first message being sent, there are no past conversations so we create it first
-        if (!conversation) {
+		if (!conversation) {
 			conversation = await prisma.conversation.create({
 				data: {
 					participantIds: {
@@ -26,15 +26,15 @@ export const sendMessage = async (req: Request, res: Response) => {
 			});
 		}
 
-        const newMessage = await prisma.message.create({
-            data: {
-                senderId,
-                body: message,
-                conversationId: conversation.id
-            },
-        });
+		const newMessage = await prisma.message.create({
+			data: {
+				senderId,
+				body: message,
+				conversationId: conversation.id,
+			},
+		});
 
-        if (newMessage) {
+		if (newMessage) {
 			conversation = await prisma.conversation.update({
 				where: {
 					id: conversation.id,
@@ -49,11 +49,17 @@ export const sendMessage = async (req: Request, res: Response) => {
 			});
 		}
 
-        res.status(201).json(newMessage);
-    } catch (error:any) {
-        console.error("Error in sendMessage: ", error.message);
-        res.status(500).json({ error: "Internal server error" });
-    }
+		const receiverSocketId = getReceiverSocketId(receiverId);
+
+		if (receiverSocketId) {
+			io.to(receiverSocketId).emit("newMessage", newMessage);
+		}
+
+		res.status(201).json(newMessage);
+	} catch (error: any) {
+		console.error("Error in sendMessage: ", error.message);
+		res.status(500).json({ error: "Internal server error" });
+	}
 };
 
 export const getMessages = async (req: Request, res: Response) => {
@@ -87,9 +93,9 @@ export const getMessages = async (req: Request, res: Response) => {
 	}
 };
 
-export const getUserForSidebar = async (req: Request, res: Response) => {
-    try {
-        const authUserId = req.user.id;
+export const getUsersForSidebar = async (req: Request, res: Response) => {
+	try {
+		const authUserId = req.user.id;
 
 		const users = await prisma.user.findMany({
 			where: {
@@ -105,9 +111,8 @@ export const getUserForSidebar = async (req: Request, res: Response) => {
 		});
 
 		res.status(200).json(users);
-        
-    } catch (error:any) {
-        console.error("Error in getUsersForSidebar: ", error.message);
+	} catch (error: any) {
+		console.error("Error in getUsersForSidebar: ", error.message);
 		res.status(500).json({ error: "Internal server error" });
-    }
+	}
 };

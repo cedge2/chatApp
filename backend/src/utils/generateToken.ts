@@ -7,10 +7,10 @@ const generateToken = (userId: string, res: Response) => {
 	});
 
 	res.cookie("jwt", token, {
-		maxAge: 15 * 24 * 60 * 60 * 1000, // MS,
-		httpOnly: true, // prevent XSS cross site scripting
-		sameSite: "strict", // CSRF attack cross-site request forgery
-		secure: process.env.NODE_ENV !== "development", // HTTPS
+		maxAge: 15 * 24 * 60 * 60 * 1000, 
+		httpOnly: true, 
+		sameSite: "strict", 
+		secure: process.env.NODE_ENV !== "development",
 	});
 
 	return token;
