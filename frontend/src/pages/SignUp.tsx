@@ -4,21 +4,42 @@ import { useState } from "react";
 import useSignup from "../hooks/useSignup";
 
 const SignUp = () => {
-	const [inputs, setInputs] = useState({
+	// Explicitly define types since you are using TypeScript
+	const [inputs, setInputs] = useState<{
+		fullName: string;
+		username: string;
+		password: string;
+		confirmPassword: string;
+		gender: "male" | "female" | "";
+	}>({
 		fullName: "",
 		username: "",
 		password: "",
 		confirmPassword: "",
 		gender: "",
 	});
+
 	const { loading, signup } = useSignup();
 
+	// Updated to use functional state updates for better performance
 	const handleCheckboxChange = (gender: "male" | "female") => {
-		setInputs({ ...inputs, gender });
+		setInputs((prev) => ({ ...prev, gender }));
 	};
 
+	// Added basic form validation before submission
 	const handleSubmitForm = (e: React.FormEvent) => {
 		e.preventDefault();
+
+		// This one is to ensure passwords match and required fields are filled
+		if (inputs.password !== inputs.confirmPassword) {
+			alert("Passwords do not match");
+			return;
+		}
+		if (!inputs.fullName || !inputs.username || !inputs.password || !inputs.gender) {
+			alert("Please fill in all the fields");
+			return;
+		}
+
 		signup(inputs);
 	};
 
@@ -31,54 +52,58 @@ const SignUp = () => {
 
 				<form onSubmit={handleSubmitForm}>
 					<div>
-						<label className='label p-2'>
+						<label htmlFor='fullName' className='label p-2'>
 							<span className='text-base label-text'>Full Name</span>
 						</label>
 						<input
+							id='fullName'
 							type='text'
 							placeholder='John Doe'
 							className='w-full input input-bordered  h-10'
 							value={inputs.fullName}
-							onChange={(e) => setInputs({ ...inputs, fullName: e.target.value })}
+							onChange={(e) => setInputs((prev) => ({ ...prev, fullName: e.target.value }))}
 						/>
 					</div>
 
 					<div>
-						<label className='label p-2 '>
+						<label htmlFor='username' className='label p-2'>
 							<span className='text-base label-text'>Username</span>
 						</label>
 						<input
+							id='username'
 							type='text'
 							placeholder='johndoe'
 							className='w-full input input-bordered h-10'
 							value={inputs.username}
-							onChange={(e) => setInputs({ ...inputs, username: e.target.value })}
+							onChange={(e) => setInputs((prev) => ({ ...prev, username: e.target.value }))}
 						/>
 					</div>
 
 					<div>
-						<label className='label'>
+						<label htmlFor='password' className='label'>
 							<span className='text-base label-text'>Password</span>
 						</label>
 						<input
+							id='password'
 							type='password'
 							placeholder='Enter Password'
 							className='w-full input input-bordered h-10'
 							value={inputs.password}
-							onChange={(e) => setInputs({ ...inputs, password: e.target.value })}
+							onChange={(e) => setInputs((prev) => ({ ...prev, password: e.target.value }))}
 						/>
 					</div>
 
 					<div>
-						<label className='label'>
+						<label htmlFor='confirmPassword' className='label'>
 							<span className='text-base label-text'>Confirm Password</span>
 						</label>
 						<input
+							id='confirmPassword'
 							type='password'
 							placeholder='Confirm Password'
 							className='w-full input input-bordered h-10'
 							value={inputs.confirmPassword}
-							onChange={(e) => setInputs({ ...inputs, confirmPassword: e.target.value })}
+							onChange={(e) => setInputs((prev) => ({ ...prev, confirmPassword: e.target.value }))}
 						/>
 					</div>
 
@@ -101,4 +126,5 @@ const SignUp = () => {
 		</div>
 	);
 };
+
 export default SignUp;
